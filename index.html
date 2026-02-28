@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Progression</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #191919; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+        .chart-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chart-container">
+        <canvas id="runningChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('runningChart').getContext('2d');
+
+        // 1. Raw Data Input (Add your future races right here!)
+        const rawData = [
+            { type: 'Half Marathon', date: 'Sep 2021', pace: 9.72 },
+            { type: 'Full Marathon', date: 'Nov 2021', pace: 11.20 },
+            { type: 'Half Marathon', date: 'Jan 2022', pace: 9.28 },
+            { type: 'Full Marathon', date: 'Mar 2022', pace: 10.17 },
+            { type: 'Full Marathon', date: 'Oct 2022', pace: 10.70 },
+            { type: 'Half Marathon', date: 'Jan 2023', pace: 8.13 },
+            { type: 'Full Marathon', date: 'Mar 2023', pace: 10.45 },
+            { type: 'Full Marathon', date: 'Jul 2023', pace: 10.55 },
+            { type: '30K', date: 'Nov 2023', pace: 10.93 },
+            { type: 'Half Marathon', date: 'Jan 2024', pace: 7.93 },
+            { type: 'Full Marathon', date: 'Mar 2024', pace: 10.02 },
+            { type: 'Full Marathon', date: 'Jun 2024', pace: 10.17 },
+            { type: 'Full Marathon', date: 'Oct 2024', pace: 9.83 },
+            { type: '30K', date: 'Dec 2024', pace: 10.42 },
+            { type: 'Full Marathon', date: 'Mar 2025', pace: 8.47 },
+            { type: 'Half Marathon', date: 'Apr 2025', pace: 7.43 },
+            { type: 'Full Marathon', date: 'May 2025', pace: 7.87 },
+            { type: 'Full Marathon', date: 'Oct 2025', pace: 7.45 },
+            { type: 'Half Marathon', date: 'Jan 2026', pace: 7.68 }
+        ];
+
+        // 2. Generate a continuous monthly timeline for the X-axis
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const timelineLabels = [];
+        for (let year = 2021; year <= 2026; year++) {
+            for (let m = 0; m < 12; m++) {
+                if (year === 2021 && m < 8) continue; // Start timeline at Sep 2021
+                if (year === 2026 && m > 0) continue; // End timeline at Jan 2026
+                timelineLabels.push(`${months[m]} ${year}`);
+            }
+        }
+
+        // 3. Map the raw data onto the accurate timeline
+        const halfData = new Array(timelineLabels.length).fill(null);
+        const fullData = new Array(timelineLabels.length).fill(null);
+        const thirtyData = new Array(timelineLabels.length).fill(null);
+
+        rawData.forEach(race => {
+            const index = timelineLabels.indexOf(race.date);
+            if (index !== -1) {
+                if (race.type === 'Half Marathon') halfData[index] = race.pace;
+                if (race.type === 'Full Marathon') fullData[index] = race.pace;
+                if (race.type === '30K') thirtyData[index] = race.pace;
+            }
+        });
+
+        const data = {
+            labels: timelineLabels,
+            datasets: [
+                {
+                    label: 'Half Marathon',
+                    data: halfData,
+                    borderColor: '#00bfff', 
+                    backgroundColor: '#00bfff',
+                    spanGaps: true, 
+                    tension: 0 
+                },
+                {
+                    label: 'Full Marathon',
+                    data: fullData,
+                    borderColor: '#ff6b6b', 
+                    backgroundColor: '#ff6b6b',
+                    spanGaps: true,
+                    tension: 0 
+                },
+                {
+                    label: '30K',
+                    data: thirtyData,
+                    borderColor: '#32cd32', 
+                    backgroundColor: '#32cd32',
+                    spanGaps: true,
+                    tension: 0 
+                }
+            ]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#ffffff' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let decimalPace = context.raw;
+                                let mins = Math.floor(decimalPace);
+                                let secs = Math.round((decimalPace - mins) * 60);
+                                let formattedSecs = secs < 10 ? '0' + secs : secs;
+                                return context.dataset.label + ': ' + mins + ':' + formattedSecs + ' /mi';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { 
+                            color: '#aaaaaa',
+                            maxRotation: 0,
+                            autoSkip: false,
+                            // This filters the text to only show Jan and Jul
+                            callback: function(val, index) {
+                                const label = timelineLabels[index];
+                                if (label.startsWith('Jan') || label.startsWith('Jul')) {
+                                    return label;
+                                }
+                                return null; 
+                            }
+                        },
+                        grid: { 
+                            // This filters the vertical lines to only draw on Jan and Jul
+                            color: function(context) {
+                                if (context.tick && context.tick.value !== undefined) {
+                                    const label = timelineLabels[context.tick.value];
+                                    if (label && (label.startsWith('Jan') || label.startsWith('Jul'))) {
+                                        return '#333333';
+                                    }
+                                }
+                                return 'transparent';
+                            }
+                        }
+                    },
+                    y: {
+                        reverse: true, 
+                        ticks: { 
+                            color: '#aaaaaa',
+                            callback: function(value) {
+                                let mins = Math.floor(value);
+                                let secs = Math.round((value - mins) * 60);
+                                let formattedSecs = secs < 10 ? '0' + secs : secs;
+                                return mins + ':' + formattedSecs;
+                            }
+                        },
+                        grid: { color: '#333333' },
+                        title: {
+                            display: true,
+                            text: 'Pace (Min/Mile)',
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        };
+
+        new Chart(ctx, config);
+    </script>
+</body>
+</html>
