@@ -15,11 +15,13 @@
             height: 100vh;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            overflow: hidden; /* Prevents scrollbars */
         }
         .chart-container {
-            width: 90%;
+            width: 98%; /* Pushed to the edges for maximum mobile space */
             max-width: 1000px;
-            height: 400px;
+            height: 95vh; /* Uses height relative to viewport to fit mobile screens better */
+            max-height: 500px;
         }
     </style>
 </head>
@@ -96,7 +98,9 @@
                     backgroundColor: '#00bfff',
                     spanGaps: true, 
                     tension: 0,
-                    pointHoverRadius: 6
+                    pointRadius: 5,        // Enlarged visible dot
+                    pointHoverRadius: 7,   // Size when tapped
+                    pointHitRadius: 25     // Massive invisible tap target area!
                 },
                 {
                     label: 'Full Marathon',
@@ -105,7 +109,9 @@
                     backgroundColor: '#ff6b6b',
                     spanGaps: true,
                     tension: 0,
-                    pointHoverRadius: 6
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointHitRadius: 25
                 },
                 {
                     label: '30K',
@@ -114,7 +120,9 @@
                     backgroundColor: '#32cd32',
                     spanGaps: true,
                     tension: 0,
-                    pointHoverRadius: 6
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointHitRadius: 25
                 }
             ]
         };
@@ -149,17 +157,30 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: -5, // Pulls the Y-axis slightly left to save space
+                        right: 15 // Keeps the last dot from clipping off the right side
+                    }
+                },
                 interaction: {
                     mode: 'nearest',
-                    intersect: true, 
+                    intersect: false, // Set to false so you don't have to touch the exact dot, just be in its vertical column!
                 },
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#ffffff', padding: 20 }
+                        labels: { 
+                            color: '#ffffff', 
+                            padding: 12,
+                            boxWidth: 12, // Smaller colored squares
+                            font: {
+                                size: 11 // Smaller font to fit all on one line horizontally
+                            }
+                        }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                        backgroundColor: 'rgba(30, 30, 30, 0.95)',
                         titleColor: '#aaaaaa',
                         titleFont: { size: 11, weight: 'normal' },
                         bodyFont: { size: 13 },
@@ -196,7 +217,7 @@
                             color: '#aaaaaa',
                             maxRotation: 0,
                             autoSkip: false,
-                            // SAFETY CHECK INCLUDED HERE
+                            font: { size: 11 },
                             callback: function(val, index) {
                                 const label = timelineLabels[index];
                                 if (label && label.startsWith('Jan')) {
@@ -221,6 +242,7 @@
                         reverse: true, 
                         ticks: { 
                             color: '#aaaaaa',
+                            font: { size: 11 },
                             callback: function(value) {
                                 let mins = Math.floor(value);
                                 let secs = Math.round((value - mins) * 60);
@@ -230,9 +252,7 @@
                         },
                         grid: { color: '#333333' },
                         title: {
-                            display: true,
-                            text: 'Pace (Min/Mile)',
-                            color: '#ffffff'
+                            display: false // Hidden to maximize horizontal space on mobile
                         }
                     }
                 }
