@@ -32,41 +32,47 @@
     <script>
         const ctx = document.getElementById('runningChart').getContext('2d');
 
-        // 1. Raw Data Input (Add your future races right here!)
+        // 1. Enriched Raw Data
         const rawData = [
-            { type: 'Half Marathon', date: 'Sep 2021', pace: 9.72 },
-            { type: 'Full Marathon', date: 'Nov 2021', pace: 11.20 },
-            { type: 'Half Marathon', date: 'Jan 2022', pace: 9.28 },
-            { type: 'Full Marathon', date: 'Mar 2022', pace: 10.17 },
-            { type: 'Full Marathon', date: 'Oct 2022', pace: 10.70 },
-            { type: 'Half Marathon', date: 'Jan 2023', pace: 8.13 },
-            { type: 'Full Marathon', date: 'Mar 2023', pace: 10.45 },
-            { type: 'Full Marathon', date: 'Jul 2023', pace: 10.55 },
-            { type: '30K', date: 'Nov 2023', pace: 10.93 },
-            { type: 'Half Marathon', date: 'Jan 2024', pace: 7.93 },
-            { type: 'Full Marathon', date: 'Mar 2024', pace: 10.02 },
-            { type: 'Full Marathon', date: 'Jun 2024', pace: 10.17 },
-            { type: 'Full Marathon', date: 'Oct 2024', pace: 9.83 },
-            { type: '30K', date: 'Dec 2024', pace: 10.42 },
-            { type: 'Full Marathon', date: 'Mar 2025', pace: 8.47 },
-            { type: 'Half Marathon', date: 'Apr 2025', pace: 7.43 },
-            { type: 'Full Marathon', date: 'May 2025', pace: 7.87 },
-            { type: 'Full Marathon', date: 'Oct 2025', pace: 7.45 },
-            { type: 'Half Marathon', date: 'Jan 2026', pace: 7.68 }
+            { name: 'Surf City Half Marathon', type: 'Half Marathon', date: 'Sep 2021', fullDate: 'Sept 11, 2021', time: '2:07:22', pace: 9.72 },
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Nov 2021', fullDate: 'Nov 7, 2021', time: '4:53:42', pace: 11.20 },
+            { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Jan 2022', fullDate: 'Jan 16, 2022', time: '2:01:38', pace: 9.28 },
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2022', fullDate: 'Mar 20, 2022', time: '4:26:45', pace: 10.17 },
+            { name: 'Long Beach Marathon', type: 'Full Marathon', date: 'Oct 2022', fullDate: 'Oct 9, 2022', time: '4:40:30', pace: 10.70 },
+            { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Jan 2023', fullDate: 'Jan 15, 2023', time: '1:46:32', pace: 8.13 },
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2023', fullDate: 'Mar 19, 2023', time: '4:34:00', pace: 10.45 },
+            { name: 'SF Marathon', type: 'Full Marathon', date: 'Jul 2023', fullDate: 'Jul 23, 2023', time: '4:36:28', pace: 10.55 },
+            { name: 'Griffith Park Trail 30K', type: '30K', date: 'Nov 2023', fullDate: 'Nov 18, 2023', time: '3:24:05', pace: 10.93 },
+            { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Jan 2024', fullDate: 'Jan 21, 2024', time: '1:43:57', pace: 7.93 },
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2024', fullDate: 'Mar 17, 2024', time: '4:22:41', pace: 10.02 },
+            { name: 'San Diego Marathon', type: 'Full Marathon', date: 'Jun 2024', fullDate: 'Jun 2, 2024', time: '4:26:33', pace: 10.17 },
+            { name: 'Long Beach Marathon', type: 'Full Marathon', date: 'Oct 2024', fullDate: 'Oct 6, 2024', time: '4:18:11', pace: 9.83 },
+            { name: 'Ray Miller 30K', type: '30K', date: 'Dec 2024', fullDate: 'Dec 7, 2024', time: '3:14:15', pace: 10.42 },
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2025', fullDate: 'Mar 16, 2025', time: '3:42:00', pace: 8.47 },
+            { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Apr 2025', fullDate: 'Apr 27, 2025', time: '1:37:23', pace: 7.43 },
+            { name: 'Hoag OC Marathon', type: 'Full Marathon', date: 'May 2025', fullDate: 'May 4, 2025', time: '3:26:06', pace: 7.87 },
+            { name: 'Long Beach Marathon', type: 'Full Marathon', date: 'Oct 2025', fullDate: 'Oct 5, 2025', time: '3:15:22', pace: 7.45 },
+            { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Jan 2026', fullDate: 'Jan 18, 2026', time: '1:40:30', pace: 7.68 }
         ];
 
-        // 2. Generate a continuous monthly timeline for the X-axis
+        // 2. Lookup Dictionary for Tooltips
+        const raceLookup = {};
+        rawData.forEach(race => {
+            raceLookup[`${race.date}_${race.type}`] = race;
+        });
+
+        // 3. Generate Timeline
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const timelineLabels = [];
         for (let year = 2021; year <= 2026; year++) {
             for (let m = 0; m < 12; m++) {
-                if (year === 2021 && m < 8) continue; // Start timeline at Sep 2021
-                if (year === 2026 && m > 0) continue; // End timeline at Jan 2026
+                if (year === 2021 && m < 8) continue; 
+                if (year === 2026 && m > 0) continue; 
                 timelineLabels.push(`${months[m]} ${year}`);
             }
         }
 
-        // 3. Map the raw data onto the accurate timeline
+        // 4. Map Data to Timeline
         const halfData = new Array(timelineLabels.length).fill(null);
         const fullData = new Array(timelineLabels.length).fill(null);
         const thirtyData = new Array(timelineLabels.length).fill(null);
@@ -89,7 +95,8 @@
                     borderColor: '#00bfff', 
                     backgroundColor: '#00bfff',
                     spanGaps: true, 
-                    tension: 0 
+                    tension: 0,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Full Marathon',
@@ -97,7 +104,8 @@
                     borderColor: '#ff6b6b', 
                     backgroundColor: '#ff6b6b',
                     spanGaps: true,
-                    tension: 0 
+                    tension: 0,
+                    pointHoverRadius: 6
                 },
                 {
                     label: '30K',
@@ -105,9 +113,34 @@
                     borderColor: '#32cd32', 
                     backgroundColor: '#32cd32',
                     spanGaps: true,
-                    tension: 0 
+                    tension: 0,
+                    pointHoverRadius: 6
                 }
             ]
+        };
+
+        // 5. Custom Plugin: Vertical Dashed Line on Hover (WITH SAFETY CHECK)
+        const verticalHoverLine = {
+            id: 'verticalHoverLine',
+            beforeDraw: (chart) => {
+                if (chart.tooltip && chart.tooltip._active && chart.tooltip._active.length) {
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    const activePoint = chart.tooltip._active[0];
+                    const x = activePoint.element.x;
+                    const topY = chart.scales.y.top;
+                    const bottomY = chart.scales.y.bottom;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, topY);
+                    ctx.lineTo(x, bottomY);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; 
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
         };
 
         const config = {
@@ -116,19 +149,43 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest',
+                    intersect: true, 
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#ffffff' }
+                        labels: { color: '#ffffff', padding: 20 }
                     },
                     tooltip: {
+                        backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                        titleColor: '#aaaaaa',
+                        titleFont: { size: 11, weight: 'normal' },
+                        bodyFont: { size: 13 },
+                        padding: 12,
                         callbacks: {
+                            title: function() { return null; }, 
                             label: function(context) {
-                                let decimalPace = context.raw;
-                                let mins = Math.floor(decimalPace);
-                                let secs = Math.round((decimalPace - mins) * 60);
-                                let formattedSecs = secs < 10 ? '0' + secs : secs;
-                                return context.dataset.label + ': ' + mins + ':' + formattedSecs + ' /mi';
+                                const raceDate = timelineLabels[context.dataIndex];
+                                const type = context.dataset.label;
+                                const raceInfo = raceLookup[`${raceDate}_${type}`];
+
+                                if (raceInfo) {
+                                    let decimalPace = context.raw;
+                                    let mins = Math.floor(decimalPace);
+                                    let secs = Math.round((decimalPace - mins) * 60);
+                                    let formattedSecs = secs < 10 ? '0' + secs : secs;
+                                    
+                                    return [
+                                        raceInfo.name.toUpperCase(),
+                                        '',
+                                        'Date: ' + raceInfo.fullDate,
+                                        'Time: ' + raceInfo.time,
+                                        'Pace: ' + mins + ':' + formattedSecs + ' /mi'
+                                    ];
+                                }
+                                return '';
                             }
                         }
                     }
@@ -139,21 +196,20 @@
                             color: '#aaaaaa',
                             maxRotation: 0,
                             autoSkip: false,
-                            // This filters the text to only show Jan and Jul
+                            // SAFETY CHECK INCLUDED HERE
                             callback: function(val, index) {
                                 const label = timelineLabels[index];
-                                if (label.startsWith('Jan') || label.startsWith('Jul')) {
-                                    return label;
+                                if (label && label.startsWith('Jan')) {
+                                    return label.split(' ')[1]; 
                                 }
                                 return null; 
                             }
                         },
                         grid: { 
-                            // This filters the vertical lines to only draw on Jan and Jul
                             color: function(context) {
                                 if (context.tick && context.tick.value !== undefined) {
                                     const label = timelineLabels[context.tick.value];
-                                    if (label && (label.startsWith('Jan') || label.startsWith('Jul'))) {
+                                    if (label && label.startsWith('Jan')) {
                                         return '#333333';
                                     }
                                 }
@@ -183,7 +239,12 @@
             }
         };
 
-        new Chart(ctx, config);
+        new Chart(ctx, {
+            type: config.type,
+            data: config.data,
+            options: config.options,
+            plugins: [verticalHoverLine]
+        });
     </script>
 </body>
 </html>
