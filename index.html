@@ -55,7 +55,7 @@
             { name: 'Hoag OC Marathon', type: 'Full Marathon', date: 'May 2025', fullDate: 'May 4, 2025', time: '3:26:06', pace: 7.87 },
             { name: 'Long Beach Marathon', type: 'Full Marathon', date: 'Oct 2025', fullDate: 'Oct 5, 2025', time: '3:15:22', pace: 7.45 },
             { name: 'Rose Bowl Half Marathon', type: 'Half Marathon', date: 'Jan 2026', fullDate: 'Jan 18, 2026', time: '1:40:30', pace: 7.68 },
-            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2026', fullDate: 'Mar 8, 2026', time: '3:34:49', pace: 8.19 }
+            { name: 'LA Marathon', type: 'Full Marathon', date: 'Mar 2026', fullDate: 'Mar 8, 2026', time: '3:34:49', pace: 8.20 }
         ];
 
         // 2. Lookup Dictionary for Tooltips
@@ -70,7 +70,7 @@
         for (let year = 2021; year <= 2026; year++) {
             for (let m = 0; m < 12; m++) {
                 if (year === 2021 && m < 8) continue; 
-                if (year === 2026 && m > 0) continue; 
+                if (year === 2026 && m > 2) continue; // Extended to March 2026
                 timelineLabels.push(`${months[m]} ${year}`);
             }
         }
@@ -269,4 +269,3 @@
     </script>
 </body>
 </html>
-
